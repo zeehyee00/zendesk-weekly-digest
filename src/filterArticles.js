@@ -32,4 +32,4 @@ function getLastWeekRange() {
     return { start: lastMonday, end: lastSunday };
 
 }
-export { filterLastWeekArticles };
+export { filterLastWeekArticles, getLastWeekRange };

@@ -51,3 +51,5 @@ async function createDraftArticle(token, sectionId, title, bodyHtml) {
     const data = await response.json();
     return data.article;
 }
+
+export { getAccessToken, getSourceArticles, createDraftArticle };

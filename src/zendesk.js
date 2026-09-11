@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { filterLastWeekArticles } from './filterArticles.js';
 
 async function getSourceArticles(sectionId) {
     const url = `${process.env.ZENDESK_PUBLIC_BASE}/api/v2/help_center/sections/${sectionId}/articles.json`;
@@ -9,3 +10,4 @@ async function getSourceArticles(sectionId) {
     return data.articles;
 
 }
+

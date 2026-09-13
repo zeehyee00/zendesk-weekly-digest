@@ -5,24 +5,9 @@ import {
     createDraftArticle
 } from "./zendesk.js";
 import { filterLastWeekArticles, getLastWeekRange } from "./filterArticles.js";
-import { summarizeAnnouncements } from './summarize.js';
+import { summarizeAnnouncements, summarizeReleaseNotes } from './summarize.js';
 import { formatDate, formatReleaseNoteTitle } from './format.js';
 
-// 원문 나열
-function buildTempSummaryHtml(articles) {
-    if (articles.length === 0) {
-        return '<p>지난주에 수정된 글이 없습니다.</p>';
-    }
-
-    let html = '';
-    for (const article of articles) {
-        html += `<h3>${article.title}</h3>`;
-        html += `<p>원문 링크: <a href="${article.html_url}">${article.html_url}</a></p>`;
-        html += `<p>수정일: ${article.edited_at}</p>`;
-        html += `<hr>`;
-    }
-    return html;
-}
 
 
 // TEST 진행
@@ -61,9 +46,9 @@ async function main() {
         );
     }
 
-    console.log('5. 릴리즈노트 요약 및 draft 생성 중 (임시 버전) ..');
+    console.log('5. 릴리즈노트 요약 및 draft 생성 중 ..');
     if (filteredReleaseNotes.length > 0) {
-        const releaseNotesHtml = buildTempSummaryHtml(filteredReleaseNotes);
+        const releaseNotesHtml = await summarizeReleaseNotes(filteredReleaseNotes);
         const releaseNoteTitle = formatReleaseNoteTitle(filteredReleaseNotes[0].title);
 
         await createDraftArticle(

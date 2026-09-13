@@ -29,6 +29,7 @@ async function callGeminiWithRetry(prompt, maxRetries = 3) {
 }
 
 // 여러 글을 하나의 프롬프트에 번호 매겨서 다 담기
+// 공지사항 요약
 async function extractAllAnnouncements(articles) {
     let articlesText = '';
     articles.forEach((article, index) => {
@@ -98,4 +99,75 @@ async function summarizeAnnouncements(articles) {
     return buildAnnouncementsTable(items);
 }
 
-export { summarizeAnnouncements };
+//릴리즈노트 요약
+async function extractAllReleaseNotes(articles) {
+    let bodyText = '';
+
+    articles.forEach((article) => {
+        bodyText += `\n${article.body}`;
+    });
+
+    const prompt = `
+        다음은 Zendesk 공식 릴리즈노트 원문입니다. 이 안의 내용을 기능 카테고리별로 분류하고, 각 카테고리마다 "신규"와 "변경" 내용을 나눠서 한국어로 정리해주세요.
+
+    규칙:
+    - 카테고리는 원문에 있는 기준(예: AI Agents, Knowledge, Help Center, Voice, Apps and integrations 등)을 그대로 따르세요.
+    - 각 카테고리의 "신규"와 "변경" 내용은 한국어로 간결하게 요약하세요. 해당 없으면 빈 문자열("")로 두세요.
+    - 여러 항목이 있으면 줄바꿈(\\n)으로 구분된 하나의 문자열로 합치세요.
+    - 설명이나 다른 텍스트 없이 JSON 배열로만 응답하세요.
+
+    원문:
+    ${bodyText}
+
+    JSON 형식:
+    [{"category": "카테고리명", "newItems": "신규 내용", "changedItems": "변경 내용"}, ...]
+    `;
+
+    const response = await callGeminiWithRetry(prompt);
+    return JSON.parse(response.text);
+}
+
+// 정해진 포맷으로 변경
+function buildReleaseNotesTable(items) {
+    if (items.length === 0) {
+        return '<p>지난주에 변경된 릴리즈노트가 없습니다.</p>';
+    }
+
+    let rows = '';
+    for (const item of items) {
+        const newPart = item.newItems
+            ? `<strong>신규 : </strong><br>${item.newItems.replace(/\n/g, '<br>')}` : '';
+        const changedPart = item.changedItems
+            ? `<strong>변경 : </strong><br>${item.changedItems.replace(/\n/g, '<br>')}` : '';
+
+        const separator = newPart && changedPart ? '<br><br>' : '';
+
+        rows += `
+            <tr>
+                <td>${item.category}</td>
+                <td>${newPart}${separator}${changedPart}</td>
+            </tr>
+        `;
+    }
+
+    return `
+        <table border="1" style="border-collapse:collapse;width:100%;">
+        <thead>
+            <tr><th>카테고리</th><th>내용</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        </table>
+    `;
+}
+
+async function summarizeReleaseNotes(articles) {
+    if (articles.length === 0) {
+        return buildReleaseNotesTable([]);
+    }
+    console.log('   - 릴리즈노트를 Gemini로 카테고리별 정리 중...')
+    const items = await extractAllReleaseNotes(articles);
+    return buildReleaseNotesTable(items);
+}
+
+
+export { summarizeAnnouncements, summarizeReleaseNotes };

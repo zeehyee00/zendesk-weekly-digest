@@ -1,3 +1,4 @@
+// 가져온 기사들 중 정한 범위 내 해당하는 기사들만 필터링
 function filterLastWeekArticles(articles) {
     const { start, end } = getLastWeekRange();
 
@@ -14,6 +15,7 @@ function filterLastWeekArticles(articles) {
     return filtered;
 }
 
+// 지난주 월요일 - 일요일 까지 범위 설정  참고) 일요일 = 0
 function getLastWeekRange() {
     const now = new Date();
     const dayOfWeek = now.getDay();

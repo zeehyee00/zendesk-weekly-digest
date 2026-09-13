@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import { GoogleGenAI } from '@google/genai';
 
+// Gemni API key 등록
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+// API 호출 실패 시 재시도 설정
 async function callGeminiWithRetry(prompt, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {

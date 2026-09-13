@@ -56,7 +56,7 @@ async function main() {
         await createDraftArticle(
             token,
             process.env.TARGET_ANNOUNCEMENTS_SECTION_ID,
-            `Announcements[${dateRangeLabel}]`,
+            `Announcements [${dateRangeLabel}]`,
             announcementsHtml
         );
     }

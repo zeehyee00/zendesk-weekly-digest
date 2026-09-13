@@ -19,6 +19,7 @@ async function getAccessToken() {
     return data.access_token;
 }
 
+// Zendesk 공식 홈페이지에서 기사들 가져오기
 async function getSourceArticles(sectionId) {
     const url = `${process.env.ZENDESK_PUBLIC_BASE}/api/v2/help_center/sections/${sectionId}/articles.json`;
 
@@ -29,6 +30,7 @@ async function getSourceArticles(sectionId) {
 
 }
 
+// zendesk 헬프센터 콘텐츠에 기사 초안 생성
 async function createDraftArticle(token, sectionId, title, bodyHtml) {
     const url = `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/help_center/sections/${sectionId}/articles.json`;
 

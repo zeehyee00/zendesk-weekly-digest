@@ -99,7 +99,7 @@ async function main() {
 
 
 // 매주 월요일 08:00  참고) [분] [시] [일] [월] [요일]
-cron.schedule('* * * * *', () => {
+cron.schedule('0 8 * * 1', () => {
     console.log('예약된 작업 시작:', new Date().toLocaleString());
     main();
 }, {

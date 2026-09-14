@@ -14,7 +14,7 @@ function formatReleaseNoteTitle(originalTitle) {
 
     const [, year, month, day] = match;
     const shortYear = year.slice(2);
-    return `Release Note[${shortYear}.${month}.${day}]`;
+    return `Release Note [${shortYear}.${month}.${day}]`;
 }
 
 export { formatDate, formatReleaseNoteTitle };

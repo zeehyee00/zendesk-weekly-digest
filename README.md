@@ -2,11 +2,14 @@
 
 Zendesk 공식 공지사항(Announcements)/릴리즈노트(Release Notes)를 매주 자동으로 수집·요약해 사내 Zendesk 헬프센터에 초안(draft)으로 등록하는 Node.js 자동화 스크립트입니다.
 
+
 ## Why
 
 - 매주 Zendesk 공식 헬프센터에 올라오는 공지/릴리즈노트를 사람이 직접 찾아 정리해왔음
 - 문서 양이 많고, 이어서 확인해야 해서 누락 위험이 있었음
 - 정리 과정 자체를 자동화하기 위해 제작
+
+
 
 ## What it does
 
@@ -22,6 +25,8 @@ Zendesk 공식 공지사항(Announcements)/릴리즈노트(Release Notes)를 매
 
 > 실제 게시(publish)는 자동으로 하지 않으며, 사람이 초안을 검토한 뒤 직접 게시합니다.
 
+
+
 ## Tech Stack
 
 | 항목 | 선택 |
@@ -32,6 +37,8 @@ Zendesk 공식 공지사항(Announcements)/릴리즈노트(Release Notes)를 매
 | LLM | Google Gemini |
 | 알림 | Microsoft Teams (Workflows Webhook) |
 | 스케줄링 | node-cron |
+
+
 
 ## Project Structure
 
@@ -48,11 +55,14 @@ zendesk-weekly-digest/
     └── index.js             # 전체 흐름 연결 + 스케줄러 등록
 ```
 
+
+
 ## Setup
 
 ```bash
 npm install
 ```
+
 
 `.env` 파일을 만들고 아래 값을 채웁니다.
 
@@ -76,6 +86,7 @@ GEMINI_API_KEY=
 TEAMS_WEBHOOK_URL=
 ```
 
+
 ## Run
 
 ```bash
@@ -83,6 +94,8 @@ node src/index.js
 ```
 
 매주 월요일 08:00(KST)에 자동 실행되도록 스케줄이 등록되며, 프로세스가 계속 실행 중이어야 스케줄이 동작합니다.
+
+
 
 ## Notes
 

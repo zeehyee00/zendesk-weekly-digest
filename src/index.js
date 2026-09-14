@@ -7,7 +7,7 @@ import {
 import { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate, getLastWeekRange } from "./filterArticles.js";
 import { summarizeAnnouncements, summarizeReleaseNotes } from './summarize.js';
 import { formatDate, formatReleaseNoteTitle } from './format.js';
-
+import cron from 'node-cron';
 
 
 // TEST 진행
@@ -83,4 +83,12 @@ async function main() {
     console.log('6. 완료!');
 }
 
-main();
+// 매주 월요일 00:00  참고) 
+cron.schedule('0 0 * * 1', () => {
+    console.log('예약된 작업 시작:', new Date().toLocaleString());
+    main();
+}, {
+    timezone: 'Asia/Seoul',
+});
+
+console.log('스케줄러 등록 완료. 매주 월요일 00:00(KST)에 실행됩니다.');

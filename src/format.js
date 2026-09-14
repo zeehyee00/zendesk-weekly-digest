@@ -1,3 +1,4 @@
+// Date 객체를 String 변환
 function formatDate(date) {
     const yy = String(date.getFullYear()).slice(2);
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -5,16 +6,25 @@ function formatDate(date) {
     return `${yy}.${mm}.${dd}`;
 }
 
-function formatReleaseNoteTitle(originalTitle) {
-    const match = originalTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+function extractDateFromTitle(title) {
+    const match = title.match(/(\d{4})-(\d{2})-(\d{2})/);
 
     if (!match) {
-        return originalTitle;
+        return null;
     }
 
     const [, year, month, day] = match;
-    const shortYear = year.slice(2);
-    return `Release Note [${shortYear}.${month}.${day}]`;
+    return new Date(`${year}-${month}-${day}T00:00:00`);
 }
 
-export { formatDate, formatReleaseNoteTitle };
+
+function formatReleaseNoteTitle(originalTitle) {
+    const titleDate = extractDateFromTitle(originalTitle);
+
+    if (!titleDate) {
+        return originalTitle;
+    }
+
+    return `Release Note[${formatDate(titleDate)}]`;
+}
+export { formatDate, formatReleaseNoteTitle, extractDateFromTitle };

@@ -4,7 +4,7 @@ import {
     getSourceArticles,
     createDraftArticle
 } from "./zendesk.js";
-import { filterLastWeekArticles, getLastWeekRange } from "./filterArticles.js";
+import { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate, getLastWeekRange } from "./filterArticles.js";
 import { summarizeAnnouncements, summarizeReleaseNotes } from './summarize.js';
 import { formatDate, formatReleaseNoteTitle } from './format.js';
 
@@ -15,17 +15,20 @@ async function main() {
     console.log('1. 공식 사이트에서 announcements 조회 중 ..');
 
     const announcements = await getSourceArticles(process.env.SOURCE_ANNOUNCEMENTS_SECTION_ID);
-    const filteredAnnouncements = filterLastWeekArticles(announcements);
+    const filteredAnnouncements = filterAnnouncementsByEditedDate(announcements);
     console.log(`   - ${filteredAnnouncements.length}개 발견`);
+
+    if (filteredAnnouncements.length === 0) {
+        console.log('이번 주에 변경된 글이 없습니다.');
+    }
 
     console.log('2. 공식 사이트에서 release notes 조회 중 ..');
     const releaseNotes = await getSourceArticles(process.env.SOURCE_RELEASE_NOTES_SECTION_ID);
-    const filteredReleaseNotes = filterLastWeekArticles(releaseNotes);
+    const filteredReleaseNotes = filterReleaseNotesByTitleDate(releaseNotes);
     console.log(`   - ${filteredReleaseNotes.length}개 발견`);
 
-    if (filteredAnnouncements.length === 0 && filteredReleaseNotes.length === 0) {
+    if (filteredReleaseNotes.length === 0) {
         console.log('이번 주에 변경된 글이 없습니다.');
-        return;
     }
 
     const { start, end } = getLastWeekRange();

@@ -1,5 +1,7 @@
+import { extractDateFromTitle } from "./format.js";
+
 // 가져온 기사들 중 정한 범위 내 해당하는 기사들만 필터링
-function filterLastWeekArticles(articles) {
+function filterAnnouncementsByEditedDate(articles) {
     const { start, end } = getLastWeekRange();
 
     const filtered = [];
@@ -9,6 +11,23 @@ function filterLastWeekArticles(articles) {
 
         if (editedDate >= start && editedDate <= end) {
             filtered.push(article)
+        }
+    }
+
+    return filtered;
+}
+
+function filterReleaseNotesByTitleDate(articles) {
+    const { start, end } = getLastWeekRange();
+
+    const filtered = [];
+
+    for (const article of articles) {
+        const titleDate = extractDateFromTitle(article.title);
+
+        // 제목에서 날짜를 못 찾으면 안전하게 건너뜀
+        if (titleDate && titleDate >= start && titleDate <= end) {
+            filtered.push(article);
         }
     }
 
@@ -35,4 +54,4 @@ function getLastWeekRange() {
     return { start: lastMonday, end: lastSunday };
 
 }
-export { filterLastWeekArticles, getLastWeekRange };
+export { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate, getLastWeekRange };

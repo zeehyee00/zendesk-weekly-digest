@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { filterLastWeekArticles } from './filterArticles.js';
+import { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate } from './filterArticles.js';
 
 async function getAccessToken() {
     const url = `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/oauth/tokens`;
@@ -14,7 +14,6 @@ async function getAccessToken() {
             scope: 'read users:read hc:read hc:write',
         }),
     });
-
     const data = await response.json();
     return data.access_token;
 }

@@ -2,7 +2,7 @@ const HEADER_STYLE = 'background-color:#1f4e2c;color:#ffffff;padding:8px;';
 const CELL_STYLE = 'padding:8px;vertical-align:top;';
 
 // 해당없을 경우 작성 제외 및 확인필요 표시
-function buildDateCell(item) {
+function buildAnnouncementDateCell(item) {
     const isAnnounceMissing = !item.announceDate || item.announceDate === '확인필요' || item.announceDate === '해당없음';
     const isDeployStartMissing = !item.deployStart || item.deployStart === '확인필요' || item.deployStart === '해당없음';
     const isDeployEndMissing = !item.deployEnd || item.deployEnd === '확인필요' || item.deployEnd === '해당없음';
@@ -34,7 +34,7 @@ function buildAnnouncementsTable(items) {
         rows += `
       <tr>
         <td style="${CELL_STYLE}"><a href="${item.url}">${item.topic}</a></td>
-        <td style="${CELL_STYLE}">${buildDateCell(item)}</td>
+        <td style="${CELL_STYLE}">${buildAnnouncementDateCell(item)}</td>
         <td style="${CELL_STYLE}">${item.whatChanges}</td>
         <td style="${CELL_STYLE}">[변경 이유]<br> ${item.reason}<br><br>[조치 사항]<br> ${item.action}</td>
       </tr>

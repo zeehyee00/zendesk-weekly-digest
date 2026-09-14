@@ -35,28 +35,47 @@ async function main() {
     console.log('3. zendesk accessToken 발급 중 ..');
     const token = await getAccessToken();
 
-    console.log('4. announcements draft 생성 중 ..');
+
+    console.log('4. announcements & releaseNotes 요약 중 (draft는 아직 생성 안 함) ..');
+
+    let announcementsHtml = null;
+    let releaseNotesHtml = null;
+    let releaseNoteTitle = null;
+
     if (filteredAnnouncements.length > 0) {
-        const announcementsHtml = await summarizeAnnouncements(filteredAnnouncements);
-        await createDraftArticle(
+        announcementsHtml = await summarizeAnnouncements(filteredAnnouncements);
+    }
+
+    if (filteredReleaseNotes.length > 0) {
+        releaseNotesHtml = await summarizeReleaseNotes(filteredReleaseNotes);
+        releaseNoteTitle = formatReleaseNoteTitle(filteredReleaseNotes[0].title);
+    }
+
+    console.log('5. 요약 완료! 이제 draft 생성 ..');
+
+    const createdDrafts = [];
+
+    if (announcementsHtml) {
+        const draft = await createDraftArticle(
             token,
             process.env.TARGET_ANNOUNCEMENTS_SECTION_ID,
             `Announcements [${dateRangeLabel}]`,
             announcementsHtml
         );
+
+        createdDrafts.push(draft);
     }
 
-    console.log('5. 릴리즈노트 요약 및 draft 생성 중 ..');
-    if (filteredReleaseNotes.length > 0) {
-        const releaseNotesHtml = await summarizeReleaseNotes(filteredReleaseNotes);
-        const releaseNoteTitle = formatReleaseNoteTitle(filteredReleaseNotes[0].title);
+    if (releaseNotesHtml) {
 
-        await createDraftArticle(
+        const draft = await createDraftArticle(
             token,
             process.env.TARGET_RELEASE_NOTES_SECTION_ID,
             releaseNoteTitle,
             releaseNotesHtml
         );
+
+        createdDrafts.push(draft);
     }
     console.log('6. 완료!');
 }

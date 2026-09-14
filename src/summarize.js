@@ -90,16 +90,22 @@ async function extractAllReleaseNotes(articles) {
     });
 
     const prompt = `
-        다음은 Zendesk 공식 릴리즈노트 원문입니다. 이 안의 내용을 기능 카테고리별로 분류하고, 각 카테고리마다 "신규"와 "변경" 내용을 나눠서 한국어로 정리해주세요.
+    다음은 Zendesk 공식 릴리즈노트 원문(HTML)입니다. 원문의 제목 구조(h2, h3, h4 태그)를 기준으로 카테고리를 판단해서, 각 카테고리마다 "신규"와 "변경" 내용을 나눠서 한국어로 정리해주세요.
 
-    규칙:
-    - 원문에 등장하는 카테고리(예: AI Agents, Knowledge, Help Center, Voice, Apps and integrations 등)을 절대 서로 합치지 말고, 각각 독립된 항목으로 분리하세요.
-        예를 들어 원문에 "Knowledge and AI agents" 제목 아래 "AI Agents", "Knowledge", "Help Center"가 각각 별도 섹션으로 있다면, 결과 JSON에도 반드시 "AI Agents", "Knowledge", "Help Center" 3개의 별도 객체로 나와야 합니다. "Knowledge and AI agents"처럼 여러 카테고리명을 하나로 합쳐서 쓰지 마세요.
-    - 카테고리 이름은 원문에 쓰인 이름을 그대로 사용하세요 (번역하지 말고 영문 그대로, 예: "AI Agents", "Voice", "Apps and integrations").
-    - "이번 주에 업데이트 없음" 같은 카테고리(예: "products with no updates this week")는 결과에서 완전히 제외하세요.
-    - newItems와 changedItems는 각각 "짧은 항목들의 배열"로 응답하세요. 각 항목(문자열 하나)은 최대 2줄 이내로 읽을 수 있는 간결한 문장이어야 합니다. 해당 없으면 빈 배열([])로 두세요.
-    - 원문에서 하나의 기능/변경사항으로 구분되는 건마다 배열의 별도 원소로 나누세요. 여러 개의 기능 변경사항을 한 문자열에 합쳐서 넣지 마세요 — 각 사실(fact) 하나당 배열 원소 하나입니다. (예: 원문에 "Agentic Messaging"과 "Agentic Email" 두 가지 변경이 있으면, newItems 배열에 두 개의 별도 문자열로 나와야 합니다.)
-    - 예외: 카테고리가 "Apps and integrations"인 경우, 각 항목은 설명 문장이 아니라 "기능/앱 이름 + 핵심 동작" 정도의 짧은 명사구로만 작성하세요. 예: "Aisle 테마 추가", "CXConnect: WhatsApp 캠페인 지원"
+    카테고리 판단 규칙:
+    - 원문은 큰 제목(h2)들로 나뉘어 있고, 그 h2 섹션 안에 더 작은 소제목(h3)들이 있을 수도, 없을 수도 있습니다.
+    - 오직 h2 제목이 "Knowledge and AI agents"인 경우에만 예외적으로, 그 h2 이름은 카테고리로 쓰지 말고, 그 섹션 안에 있는 h3 소제목들(예: "AI Copilot Procedures", "AI Agents Insights", "AI agents - Advanced", "Knowledge in Agent Workspace", "Knowledge Editor" 등)을 각각 독립된 카테고리로 사용하세요.
+    - 그 외 모든 h2 섹션(예: "Contact Center", "Mobile SDKs", "Apps and integrations")은, 그 안에 h3 소제목이 있든 없든 상관없이 **h2 제목 자체를 카테고리로** 사용하세요. h3가 있어도 무시하고 h2로만 묶으세요.
+    - "Dependency Updates:" 같은 h4 수준의 하위 소제목과 그 안의 내용(예: 라이브러리/의존성 버전 업데이트 목록)은 카테고리로도, 내용으로도 포함하지 마세요. 완전히 무시하세요.
+    - "products with no updates this week" 같은 카테고리는 결과에서 완전히 제외하세요.
+    - 카테고리를 서로 합치지 마세요. 각 소제목/제목은 독립된 카테고리 객체가 되어야 합니다.
+    - 카테고리 이름은 원문에 쓰인 이름을 그대로 사용하세요 (번역하지 말고 영문 그대로).
+
+    내용 작성 규칙:
+    - newItems와 changedItems 안의 내용(설명 텍스트)은 반드시 한국어로 작성하세요.
+    - 원문에서 하나의 기능/변경사항으로 구분되는 항목(원문의 각 <li> 단위)마다 배열의 별도 원소로 나누세요. 여러 항목을 한 문자열에 합치지 마세요.
+    - 각 항목은 최대 2줄 이내로 읽을 수 있는 간결한 문장이어야 합니다. 해당 없으면 빈 배열([])로 두세요.
+    - 예외: 카테고리가 "Apps and integrations"인 경우, 각 항목은 설명 문장이 아니라 "기능/앱 이름 + 핵심 동작" 정도의 짧은 명사구로만 작성하세요. 예: "Aktie Send: WhatsApp 템플릿 메시지 발송", "Public Comment Alert: 공개 답변 전 확인 모달 표시".
     - 설명이나 다른 텍스트 없이 JSON 배열로만 응답하세요.
 
     원문:

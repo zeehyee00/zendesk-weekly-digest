@@ -17,7 +17,8 @@ function filterLastWeekArticles(articles) {
 
 // 지난주 월요일 - 일요일 까지 범위 설정  참고) 일요일 = 0
 function getLastWeekRange() {
-    const now = new Date();
+    const now = process.env.TEST_DATE ? new Date(process.env.TEST_DATE) : new Date();
+
     const dayOfWeek = now.getDay();
 
     const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;

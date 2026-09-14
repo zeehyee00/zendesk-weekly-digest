@@ -8,6 +8,7 @@ import { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate, getLast
 import { summarizeAnnouncements, summarizeReleaseNotes } from './summarize.js';
 import { formatDate, formatReleaseNoteTitle } from './format.js';
 import cron from 'node-cron';
+import { notifyTeams } from './notify.js';
 
 
 // TEST 진행
@@ -80,15 +81,29 @@ async function main() {
 
         createdDrafts.push(draft);
     }
-    console.log('6. 완료!');
+    // 작업 실행 + 완료 즉시 Teams 알림
+    console.log('6. Teams 알림 전송 중 ..');
+    const links = createdDrafts.map((draft) => ({
+        title: draft.title,
+        url: draft.html_url,
+    }));
+
+    await notifyTeams(
+        '이번 주 초안 생성 완료',
+        `${createdDrafts.length}건의 초안이 생성되었습니다.`,
+        links
+    );
+
+    console.log('완료!');
 }
 
-// 매주 월요일 00:00  참고) 
-cron.schedule('0 0 * * 1', () => {
+
+// 매주 월요일 08:00  참고) [분] [시] [일] [월] [요일]
+cron.schedule('* * * * *', () => {
     console.log('예약된 작업 시작:', new Date().toLocaleString());
     main();
 }, {
     timezone: 'Asia/Seoul',
 });
 
-console.log('스케줄러 등록 완료. 매주 월요일 00:00(KST)에 실행됩니다.');
+console.log('스케줄러 등록 완료. 매주 월요일 08:00(KST)에 실행됩니다.');

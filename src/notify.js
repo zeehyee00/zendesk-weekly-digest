@@ -37,14 +37,11 @@ async function notifyTeams(title, message, links) {
         ],
     };
 
-    const response = await fetch(url, {
+    await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(card)
     });
 
-    console.log('Teams 응답 상태코드:', response.status);
-    const responseText = await response.text();
-    console.log('Teams 응답 내용:', responseText);
 }
 export { notifyTeams };

@@ -40,7 +40,7 @@ async function main() {
     const token = await getAccessToken();
 
 
-    console.log('4. announcements & releaseNotes 요약 중 (draft는 아직 생성 안 함) ..');
+    console.log('4. announcements & releaseNotes 요약 중 ..');
 
     let announcementsHtml = null;
     let releaseNotesHtml = null;
@@ -55,7 +55,7 @@ async function main() {
         releaseNoteTitle = formatReleaseNoteTitle(filteredReleaseNotes[0].title);
     }
 
-    console.log('5. 요약 완료! 이제 draft 생성 ..');
+    console.log('5. 요약 완료! draft 생성 ..');
 
     const createdDrafts = [];
 
@@ -97,13 +97,14 @@ async function main() {
     console.log('완료!');
 }
 
+main();
 
-// 매주 월요일 08:00  참고) [분] [시] [일] [월] [요일]
-cron.schedule('0 8 * * 1', () => {
-    console.log('예약된 작업 시작:', new Date().toLocaleString());
-    main();
-}, {
-    timezone: 'Asia/Seoul',
-});
+// // 매주 월요일 08:00  참고) [분] [시] [일] [월] [요일]
+// cron.schedule('0 8 * * 1', () => {
+//     console.log('예약된 작업 시작:', new Date().toLocaleString());
+//     main();
+// }, {
+//     timezone: 'Asia/Seoul',
+// });
 
-console.log('스케줄러 등록 완료. 매주 월요일 08:00(KST)에 실행됩니다.');
+// console.log('스케줄러 등록 완료. 매주 월요일 08:00(KST)에 실행됩니다.');

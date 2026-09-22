@@ -1,0 +1,36 @@
+name: Zendesk Weekly Digest
+
+on:
+  schedule:
+    - cron: '0 23 * * 0'  # 매주 일요일 23:00
+  workflow_dispatch:
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 패키지 설치
+        run: npm install
+
+      - name: 스크립트 실행
+        run: node src/index.js
+        env:
+          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_CLIENT_ID: ${{ secrets.ZENDESK_CLIENT_ID }}
+          ZENDESK_CLIENT_SECRET: ${{ secrets.ZENDESK_CLIENT_SECRET }}
+          ZENDESK_PUBLIC_BASE: ${{ secrets.ZENDESK_PUBLIC_BASE }}
+          TARGET_ANNOUNCEMENTS_SECTION_ID: ${{ secrets.TARGET_ANNOUNCEMENTS_SECTION_ID }}
+          TARGET_RELEASE_NOTES_SECTION_ID: ${{ secrets.TARGET_RELEASE_NOTES_SECTION_ID }}
+          SOURCE_ANNOUNCEMENTS_SECTION_ID: ${{ secrets.SOURCE_ANNOUNCEMENTS_SECTION_ID }}
+          SOURCE_RELEASE_NOTES_SECTION_ID: ${{ secrets.SOURCE_RELEASE_NOTES_SECTION_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}

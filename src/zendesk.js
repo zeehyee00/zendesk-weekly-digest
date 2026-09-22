@@ -20,12 +20,18 @@ async function getAccessToken() {
 
 // Zendesk 공식 홈페이지에서 기사들 가져오기
 async function getSourceArticles(sectionId) {
-    const url = `${process.env.ZENDESK_PUBLIC_BASE}/api/v2/help_center/sections/${sectionId}/articles.json`;
+    let url = `${process.env.ZENDESK_PUBLIC_BASE}/api/v2/help_center/sections/${sectionId}/articles.json`;
+    let allArticles = [];
 
-    const response = await fetch(url);
-    const data = await response.json();
+    while (url) {
+        const response = await fetch(url);
+        const data = await response.json();
+        allArticles = allArticles.concat(data.articles);
 
-    return data.articles;
+        url = data.next_page;
+    }
+
+    return allArticles;
 
 }
 

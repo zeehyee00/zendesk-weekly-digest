@@ -3,6 +3,21 @@ import { GoogleGenAI } from '@google/genai';
 import { buildAnnouncementsTable, buildReleaseNotesTable } from './htmlBuilder.js';
 
 
+class GeminiCallError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'GeminiCallError';
+    }
+}
+
+class GeminiParseError extends Error {
+    constructor(message, rawResponse) {
+        super(message);
+        this.name = 'GeminiParseError';
+        this.rawResponse = rawResponse;
+    }
+}
+
 // Gemni API key 등록
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -26,7 +41,7 @@ async function callGeminiWithRetry(prompt, maxRetries = 3) {
             console.log(`   Gemini 호출 실패 (${attempt}/${maxRetries}차 시도):`, error.message);
 
             if (attempt === maxRetries) {
-                throw error;
+                throw new GeminiCallError(`Gemini API 호출에 최종 실패했습니다: ${error.message}`)
             }
 
             await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
@@ -65,7 +80,15 @@ JSON 배열 형식 (글 ${articles.length}개만큼의 배열):
 `;
 
     const response = await callGeminiWithRetry(prompt);
-    return JSON.parse(response.text);
+
+    try {
+        return JSON.parse(response.text);
+    } catch (error) {
+        throw new GeminiParseError(
+            `[extractAllAnnouncements] Gemini 응답을 JSON으로 파싱하지 못했습니다: ${error.message}`,
+            response.text
+        );
+    }
 }
 
 
@@ -78,6 +101,7 @@ async function summarizeAnnouncements(articles) {
     const items = await extractAllAnnouncements(articles);
     return buildAnnouncementsTable(items);
 }
+
 
 
 // ── ReleaseNotes ── //
@@ -116,7 +140,14 @@ async function extractAllReleaseNotes(articles) {
     `;
 
     const response = await callGeminiWithRetry(prompt);
-    return JSON.parse(response.text);
+    try {
+        return JSON.parse(response.text);
+    } catch (error) {
+        throw new GeminiParseError(
+            `[extractAllReleaseNotes] Gemini 응답을 JSON으로 파싱하지 못했습니다: ${error.message}`,
+            response.text
+        );
+    }
 }
 
 
@@ -130,4 +161,4 @@ async function summarizeReleaseNotes(articles) {
 }
 
 
-export { summarizeAnnouncements, summarizeReleaseNotes };
+export { summarizeAnnouncements, summarizeReleaseNotes, GeminiCallError, GeminiParseError };

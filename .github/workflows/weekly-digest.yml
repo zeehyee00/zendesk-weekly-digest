@@ -2,7 +2,7 @@ name: Zendesk Weekly Digest
 
 on:
   schedule:
-    - cron: '0 23 * * 0'  # 매주 일요일 23:00
+    - cron: '53 22 * * 0'  # 매주 일요일 22:53 -> 한국 시간 07:53
   workflow_dispatch:
 
 jobs:
@@ -16,13 +16,17 @@ jobs:
       - name: Node.js 설정
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 패키지 설치
         run: npm install
 
       - name: 스크립트 실행
-        run: node src/index.js
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: node src/index.js
         env:
           ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
           ZENDESK_CLIENT_ID: ${{ secrets.ZENDESK_CLIENT_ID }}

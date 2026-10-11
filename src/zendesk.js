@@ -1,10 +1,28 @@
 import 'dotenv/config';
-import { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate } from './filterArticles.js';
+
+async function fetchZendeskJson(url, options = {}, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`Zendesk API 호출 실패 (${response.status} ${url}): ${errorBody}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.log(`   Zendesk 호출 실패 (${attempt}/${maxRetries}차 시도): ${error.message}`);
+            if (attempt === maxRetries) throw error;
+            await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+        }
+    }
+}
 
 async function getAccessToken() {
     const url = `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/oauth/tokens`;
 
-    const response = await fetch(url, {
+    const data = await fetchZendeskJson(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -14,18 +32,17 @@ async function getAccessToken() {
             scope: 'read users:read hc:read hc:write',
         }),
     });
-    const data = await response.json();
+
     return data.access_token;
 }
 
-// Zendesk 공식 홈페이지에서 기사들 가져오기
+// Zendesk 공식 홈페이지에서 기사들 가져오기 (ReleaseNotes 사용)
 async function getSourceArticles(sectionId) {
     let url = `${process.env.ZENDESK_PUBLIC_BASE}/api/v2/help_center/sections/${sectionId}/articles.json`;
     let allArticles = [];
 
     while (url) {
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await fetchZendeskJson(url);
         allArticles = allArticles.concat(data.articles);
 
         url = data.next_page;
@@ -39,7 +56,7 @@ async function getSourceArticles(sectionId) {
 async function createDraftArticle(token, sectionId, title, bodyHtml) {
     const url = `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/help_center/sections/${sectionId}/articles.json`;
 
-    const response = await fetch(url, {
+    const data = await fetchZendeskJson(url, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -54,8 +71,6 @@ async function createDraftArticle(token, sectionId, title, bodyHtml) {
             },
         }),
     });
-
-    const data = await response.json();
     return data.article;
 }
 

@@ -17,6 +17,14 @@ class GeminiParseError extends Error {
         this.rawResponse = rawResponse;
     }
 }
+function getErrorCode(error) {
+    try {
+        return JSON.parse(error.message)?.error?.code ?? null;
+    } catch {
+        return null;
+    }
+}
+
 
 // Gemni API key 등록
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -26,7 +34,7 @@ const HEADER_STYLE = 'background-color:#1f4e2c;color:#ffffff;padding:8px;';
 const CELL_STYLE = 'padding:8px;vertical-align:top;';
 
 // API 호출 실패 시 재시도 설정
-async function callGeminiWithRetry(prompt, maxRetries = 3) {
+async function callGeminiWithRetry(prompt, maxRetries = 6) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             const response = await ai.models.generateContent({
@@ -38,7 +46,16 @@ async function callGeminiWithRetry(prompt, maxRetries = 3) {
             });
             return response;
         } catch (error) {
+            const code = getErrorCode(error);
             console.log(`   Gemini 호출 실패 (${attempt}/${maxRetries}차 시도):`, error.message);
+
+            if (code === 503) {
+                console.log(` 원인: Gemini 서버 과부하(503)`);
+            } else if (code === 429) {
+                console.log(` 원인: Gemini rate limit 초과(429)`);
+            } else {
+                console.log(` 원인: 알 수 없음(code=${code})`);
+            }
 
             if (attempt === maxRetries) {
                 throw new GeminiCallError(`Gemini API 호출에 최종 실패했습니다: ${error.message}`)
@@ -119,7 +136,7 @@ async function extractAllReleaseNotes(articles) {
     카테고리 판단 규칙:
     - 원문은 큰 제목(h2)들로 나뉘어 있고, 그 h2 섹션 안에 더 작은 소제목(h3)들이 있을 수도, 없을 수도 있습니다.
     - 오직 h2 제목이 "Knowledge and AI agents"인 경우에만 예외적으로, 그 h2 이름은 카테고리로 쓰지 말고, 그 섹션 안에 있는 h3 소제목들(예: "AI Copilot Procedures", "AI Agents Insights", "AI agents - Advanced", "Knowledge in Agent Workspace", "Knowledge Editor" 등)을 각각 독립된 카테고리로 사용하세요.
-    - 그 외 모든 h2 섹션(예: "Contact Center", "Mobile SDKs", "Apps and integrations")은, 그 안에 h3 소제목이 있든 없든 상관없이 **h2 제목 자체를 카테고리로** 사용하세요. h3가 있어도 무시하고 h2로만 묶으세요.
+    - 그 외 모든 h2 섹션(예: "Contact Center", "Mobile SDKs", "Apps and integrations")은, 그 안에 h3 소제목이 있든 없든 상관없이 h2 제목 자체를 카테고리로 사용하세요. h3가 있어도 무시하고 h2로만 묶으세요.
     - "Dependency Updates:" 같은 h4 수준의 하위 소제목과 그 안의 내용(예: 라이브러리/의존성 버전 업데이트 목록)은 카테고리로도, 내용으로도 포함하지 마세요. 완전히 무시하세요.
     - "products with no updates this week" 같은 카테고리는 결과에서 완전히 제외하세요.
     - 카테고리를 서로 합치지 마세요. 각 소제목/제목은 독립된 카테고리 객체가 되어야 합니다.

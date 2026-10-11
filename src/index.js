@@ -7,22 +7,20 @@ import {
 import { filterAnnouncementsByEditedDate, filterReleaseNotesByTitleDate, getLastWeekRange } from "./filterArticles.js";
 import { summarizeAnnouncements, summarizeReleaseNotes, GeminiCallError, GeminiParseError } from './summarize.js';
 import { formatDate, formatReleaseNoteTitle } from './format.js';
+
 // import cron from 'node-cron';
 import { notifyTeams } from './notify.js';
 
-
 // TEST 진행
 async function main() {
-    try {
-        console.log('1. 공식 사이트에서 announcements 조회 중 ..');
 
+    try {
+        const { start, end } = getLastWeekRange();
+
+        console.log('1. 공식 사이트에서 announcements 조회 중 ..');
         const announcements = await getSourceArticles(process.env.SOURCE_ANNOUNCEMENTS_SECTION_ID);
         const filteredAnnouncements = filterAnnouncementsByEditedDate(announcements);
-        console.log(`   - ${filteredAnnouncements.length}개 발견`);
-
-        if (filteredAnnouncements.length === 0) {
-            console.log('이번 주에 변경된 글이 없습니다.');
-        }
+        console.log(`   - 전체 ${announcements.length}개 중 ${filteredAnnouncements.length}개 발견`);
 
         console.log('2. 공식 사이트에서 release notes 조회 중 ..');
         const releaseNotes = await getSourceArticles(process.env.SOURCE_RELEASE_NOTES_SECTION_ID);
@@ -33,7 +31,6 @@ async function main() {
             console.log('이번 주에 변경된 글이 없습니다.');
         }
 
-        const { start, end } = getLastWeekRange();
         const dateRangeLabel = `${formatDate(start)}~${formatDate(end)}`;
 
 
@@ -82,6 +79,7 @@ async function main() {
 
             createdDrafts.push(draft);
         }
+
         // 작업 실행 + 완료 즉시 Teams 알림
         console.log('6. Teams 알림 전송 중 ..');
         const links = createdDrafts.map((draft) => ({

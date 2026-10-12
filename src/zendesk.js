@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { logger } from './logger.js';
 
 async function fetchZendeskJson(url, options = {}, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -12,12 +13,17 @@ async function fetchZendeskJson(url, options = {}, maxRetries = 3) {
 
             return await response.json();
         } catch (error) {
-            console.log(`   Zendesk 호출 실패 (${attempt}/${maxRetries}차 시도): ${error.message}`);
-            if (attempt === maxRetries) throw error;
+            if (attempt === maxRetries) {
+                logger.error(`Zendesk 호출 최종 실패 (${attempt}/${maxRetries})`, error.message);
+                throw error;
+            }
+            logger.warn(`Zendesk 호출 실패 (${attempt}/${maxRetries})`, error.message);
             await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
         }
+
     }
 }
+
 
 async function getAccessToken() {
     const url = `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/oauth/tokens`;

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { GoogleGenAI } from '@google/genai';
 import { buildAnnouncementsTable, buildReleaseNotesTable } from './htmlBuilder.js';
-
+import { logger } from './logger.js';
 
 class GeminiCallError extends Error {
     constructor(message) {
@@ -47,21 +47,24 @@ async function callGeminiWithRetry(prompt, maxRetries = 6) {
             return response;
         } catch (error) {
             const code = getErrorCode(error);
-            console.log(`   Gemini 호출 실패 (${attempt}/${maxRetries}차 시도):`, error.message);
+            logger.error(`   Gemini 호출 실패 (${attempt}/${maxRetries}차 시도):`, error.message);
 
             if (code === 503) {
-                console.log(` 원인: Gemini 서버 과부하(503)`);
+                logger.error(` 원인: Gemini 서버 과부하(503)`);
             } else if (code === 429) {
-                console.log(` 원인: Gemini rate limit 초과(429)`);
+                logger.error(` 원인: Gemini rate limit 초과(429)`);
             } else {
-                console.log(` 원인: 알 수 없음(code=${code})`);
+                logger.error(` 원인: 알 수 없음(code=${code})`);
             }
 
             if (attempt === maxRetries) {
-                throw new GeminiCallError(`Gemini API 호출에 최종 실패했습니다: ${error.message}`)
+                logger.error(`Gemini 호출 최종 실패 (${attempt}/${maxRetries}) code=${code}`, error.message);
+                throw new GeminiCallError(`Gemini API 호출 최종 실패 (code=${code}): ${error.message}`);
+
             }
 
-            await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+            logger.warn(`Gemini 호출 실패 (${attempt}/${maxRetries}) code=${code}`, error.message);
+            await new Promise((resolve) => setTimeout(resolve, attempt * 10000));
         }
     }
 }

@@ -35,7 +35,7 @@ async function getAccessToken() {
             grant_type: 'client_credentials',
             client_id: process.env.ZENDESK_CLIENT_ID,
             client_secret: process.env.ZENDESK_CLIENT_SECRET,
-            scope: 'read users:read hc:read hc:write',
+            scope: 'hc:write',
         }),
     });
 

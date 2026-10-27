@@ -2,7 +2,7 @@ name: Zendesk Weekly Digest
 
 on:
   schedule:
-    - cron: '0 1 * * 1'   # 월요일 01:00 UTC = 월요일 10:00 KST
+    - cron: '33 22 * * 0'  # 일요일 22:33 UTC = 월요일 07:33 KST 
   workflow_dispatch:
 
 jobs:
